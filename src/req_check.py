@@ -19,10 +19,11 @@ async def check_request(request: Request) -> list or None:
         file_extension = image.filename.split('.')[-1]
         if file_extension in APPROVED_EXTENSIONS:
             checked_data.append(image)
-    if height.isdigit() and int(height) < 10000:
-        checked_data.append(int(height))
-    if width.isdigit() and int(width) < 10000:
-        checked_data.append(int(width))
+    if height and width:
+        if height.isdigit() and int(height) < 10000:
+            checked_data.append(int(height))
+        if width.isdigit() and int(width) < 10000:
+            checked_data.append(int(width))
     if len(checked_data) == 3:
         logger.info('SUCCESSFULLY CHECKED')
         return checked_data

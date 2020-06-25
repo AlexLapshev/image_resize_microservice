@@ -1,5 +1,3 @@
-import asyncio
-
 from aiohttp import web
 
 from src.routing import routes

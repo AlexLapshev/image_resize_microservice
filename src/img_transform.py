@@ -1,7 +1,7 @@
 import asyncio
-import os
 from concurrent.futures.thread import ThreadPoolExecutor
 from functools import partial
+from pathlib import Path
 
 from PIL import Image
 
@@ -11,7 +11,8 @@ from src.database import ImageForResize, Status
 from src.logging_file import logger
 
 
-OUT_IMG_FOLDER = os.path.join(os.path.dirname(__file__), 'imgs', 'resized')
+OUT_IMG_FOLDER = Path(__file__).parents[0].joinpath('imgs', 'resized')
+OUT_IMG_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
 async def image_to_db() -> int:
@@ -22,7 +23,7 @@ async def image_to_db() -> int:
 
 def saving_image(img: Image, img_name: str, height: int, width: int) -> str:
     img = img.resize((height, width))
-    img.save(OUT_IMG_FOLDER+img_name, optimize=True)
+    img.save(OUT_IMG_FOLDER.joinpath(img_name), optimize=True)
     logger.info('RESIZING COMPLETED')
     return 'finished'
 
@@ -35,11 +36,11 @@ async def resize_image(image: FileField, image_id: int, height: int, width: int)
     file_extension = image.filename.split('.')[-1]
     img = Image.open(image.file)
     logger.info('RESIZING IMAGE')
-    img_name = '/' + file_name + '_resized{}.{}'.format(image_id, file_extension)
+    img_name = file_name + '_resized{}.{}'.format(image_id, file_extension)
     thread_pool = ThreadPoolExecutor()
     loop = asyncio.get_running_loop()
     if res := await loop.run_in_executor(thread_pool, partial(saving_image, img, img_name, height, width)):
-        await img_db.update(image_path=OUT_IMG_FOLDER + img_name, image_status=3).apply()
+        await img_db.update(image_path=str(OUT_IMG_FOLDER.joinpath(img_name)), image_status=3).apply()
 
 
 async def get_image_from_db(image_id: int):
