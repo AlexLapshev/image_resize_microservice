@@ -1,11 +1,10 @@
 from aiohttp.web_request import Request
+from pydantic import ValidationError
 
 from src.logging_file import logger
-from src.errors_status import Errors
+from src.errors_status import GetError
 from src.img_transform import get_image_from_db
-
-
-APPROVED_EXTENSIONS = ['png', 'jpeg', 'jpg']
+from src.check_req_pydantic import ImageUploadCheck
 
 
 async def check_request(request: Request) -> list or None:
@@ -13,23 +12,13 @@ async def check_request(request: Request) -> list or None:
     image = data.get('image')
     height = data.get('height')
     width = data.get('width')
-    checked_data = []
-    if image:
-        logger.info('CHECKING IMAGE')
-        file_extension = image.filename.split('.')[-1]
-        if file_extension in APPROVED_EXTENSIONS:
-            checked_data.append(image)
-    if height and width:
-        if height.isdigit() and int(height) < 10000:
-            checked_data.append(int(height))
-        if width.isdigit() and int(width) < 10000:
-            checked_data.append(int(width))
-    if len(checked_data) == 3:
+    try:
+        data = ImageUploadCheck(image=image, width=width, height=height)
+        checked_data = [data.image, data.width, data.height]
         logger.info('SUCCESSFULLY CHECKED')
         return checked_data
-    else:
-        logger.info('INCORRECT DATA')
-        return
+    except ValidationError as e:
+        return e.errors()[0]
 
 
 async def check_id_field(request: Request):
@@ -38,12 +27,12 @@ async def check_id_field(request: Request):
         if image_id.isdigit():
             image_id = int(image_id)
         else:
-            return Errors.web_response(400)
+            return GetError('incorrect id number: {}'.format(image_id), 400).create_response_error()
         if image := await get_image_from_db(image_id):
             logger.info('IMAGE FOUND: {}'.format(image_id))
             return image
         else:
             logger.info('NO IMAGE WITH ID {}'.format(image_id))
-            return Errors.web_response(404)
+            return GetError('no image found', 404, str(image_id)).create_response_error()
     logger.info('INCORRECT FIELD NAME')
-    return Errors.web_response(400)
+    return GetError('incorrect field name', 400).create_response_error()
