@@ -10,7 +10,6 @@ gino==1.0.1
 idna==2.9
 multidict==4.7.6
 Pillow==7.1.2
-pkg-resources==0.0.0
 psycopg2-binary==2.8.5
 pydantic==1.5.1
 Pygments==2.6.1

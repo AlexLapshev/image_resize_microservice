@@ -7,7 +7,7 @@ from PIL import Image
 
 from aiohttp.web_request import FileField
 
-from src.database import ImageForResize, Status
+from src.database.database import ImageForResize, Status
 from src.logging_file import logger
 
 

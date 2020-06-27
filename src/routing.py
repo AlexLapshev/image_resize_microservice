@@ -6,7 +6,7 @@ from aiohttp.web_response import json_response
 
 from src.img_transform import resize_image, image_to_db
 from src.req_check import check_id_field, check_request
-from src.errors_status import PostError
+from src.errors_status import PostError, GetError
 
 routes = web.RouteTableDef()
 
@@ -39,6 +39,9 @@ async def get_status(request: Request) -> web.json_response:
 async def get_resized_image(request: Request) -> web.FileResponse or json_response:
     image = await check_id_field(request)
     if type(image) == dict:
-        return web.FileResponse(image.get('image_path'))
+        if image.get('image_path'):
+            return web.FileResponse(image.get('image_path'))
+        else:
+            return GetError('Image is processing', 400, image.get('image_id')).create_response_error()
     else:
         return image

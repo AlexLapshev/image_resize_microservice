@@ -1,0 +1,20 @@
+version: "3.3"
+services:
+  app:
+    image: alexlapshev/image_resize_app
+    volumes:
+      - imgs:/app/src/imgs
+    ports:
+      - "0.0.0.0:8080:8080"
+  db:
+    image: alexlapshev/image_resize_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "0.0.0.0:5432:5432"
+
+volumes:
+  pgdata:
+  imgs:
+
+
