@@ -7,6 +7,7 @@ from src.errors_status import GetError
 from src.check_req_pydantic import ImageUploadCheck
 from src.database.database import redis
 
+
 IN_IMG_FOLDER = Path(__file__).parents[0].joinpath('imgs', 'original')
 IN_IMG_FOLDER.mkdir(parents=True, exist_ok=True)
 
