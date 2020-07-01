@@ -1,5 +1,4 @@
 import asyncio
-import time
 
 from celery import Celery
 from pathlib import Path
