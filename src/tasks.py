@@ -6,10 +6,10 @@ from PIL import Image
 
 from src.database.database import redis, ImageForResize
 from src.logging_file import logger
-from src.database.database import connect_to_db, disconnect_from_db
+from src.database.database import db, url
 
 
-celery_app = Celery('image_resize', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
+celery_app = Celery('image_resize', broker='redis://redis/0', backend='redis://redis/0')
 
 OUT_IMG_FOLDER = Path(__file__).parents[0].joinpath('imgs', 'resized')
 OUT_IMG_FOLDER.mkdir(parents=True, exist_ok=True)
@@ -49,8 +49,7 @@ async def update_image_in_redis(task_id: str, task_status: str, image_path='') -
 
 
 async def save_to_db(image_task_id: str, image_path: str) -> None:
-    await connect_to_db()
-    img = await ImageForResize.create(image_task_id=image_task_id, image_path=image_path)
-    logger.info('IMAGE ADDED TO DATABASE {}'.format(img.image_path))
-    await disconnect_from_db()
+    async with db.with_bind(url) as engine:
+        img = await ImageForResize.create(image_task_id=image_task_id, image_path=image_path)
+        logger.info('IMAGE ADDED TO DATABASE {}'.format(img.image_path))
 
