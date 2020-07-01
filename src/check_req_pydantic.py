@@ -13,7 +13,7 @@ class ImageUploadCheck(BaseModel):
 
     @validator('image')
     def image_check(cls, v):
-        logger.info('CHECKING IMAGE')
+        logger.info('CHECKING IMAGE {}'.format(v.filename))
         file_extension = v.filename.split('.')[-1]
         if file_extension in APPROVED_EXTENSIONS:
             return v
@@ -22,18 +22,19 @@ class ImageUploadCheck(BaseModel):
 
     @validator('width')
     def width_check(cls, v):
-        logger.info('CHECKING WIDTH')
+        logger.info('CHECKING WIDTH: {}'.format(v))
         if v.isdigit() and int(v) < 10001:
             return int(v)
+        logger.warning('INCORRECT WIDTH: {}'.format(v))
         raise ValueError('Width is incorrect: {}'.format(v))
 
     @validator('height')
     def check_height(cls, v):
-        logger.info('CHECKING HEIGHT')
+        logger.info('CHECKING HEIGHT: {}'.format(v))
         if v.isdigit() and int(v) < 10001:
             return int(v)
-        else:
-            raise ValueError('Height is incorrect: {}'.format(v))
+        logger.warning('INCORRECT HEIGHT: {}'.format(v))
+        raise ValueError('Height is incorrect: {}'.format(v))
 
     class Config:
         arbitrary_types_allowed = True
