@@ -1,9 +1,11 @@
-import asyncio
-from gino import Gino
 import aioredis
+from src.settings import settings
+
+
+from gino import Gino
 
 db = Gino()
-url = 'postgresql://db_user:123456@db/image_microservice'
+url = settings.postgres_url
 
 
 class ImageForResize(db.Model):
@@ -23,8 +25,13 @@ async def disconnect_from_db(*args, **kwargs):
     await db.pop_bind().close()
 
 
-async def connect_to_redis(*args, **kwargs):
-    redis = await aioredis.create_redis_pool('redis://redis/0')
-    return redis
+async def connect_to_redis(app):
+    redis_url = app["redis_url"]
+    redis = await aioredis.create_redis_pool(redis_url, loop=app.loop)
+    app["redis"] = redis
 
-redis = asyncio.get_event_loop().run_until_complete(connect_to_redis())
+
+async def disconnect_from_redis(app):
+    redis = app["redis"]
+    redis.close()
+    await redis.wait_closed()

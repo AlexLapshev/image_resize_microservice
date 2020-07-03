@@ -1,15 +1,18 @@
 import asyncio
 
+
 from celery import Celery
 from pathlib import Path
 from PIL import Image
 
-from src.database.database import redis, ImageForResize
+from redis import Redis
+from src.database.database import ImageForResize
 from src.logging_file import logger
 from src.database.database import db, url
+from src.settings import settings
 
+celery_app = Celery('image_resize', broker=settings.redis_url, backend=settings.redis_url)
 
-celery_app = Celery('image_resize', broker='redis://redis/0', backend='redis://redis/0')
 
 OUT_IMG_FOLDER = Path(__file__).parents[0].joinpath('imgs', 'resized')
 OUT_IMG_FOLDER.mkdir(parents=True, exist_ok=True)
@@ -20,15 +23,13 @@ def resize_image_celery(self, image_path: str, height: int, width: int) -> None:
     task_id = self.request.id
     image_names = image_name_format(image_path)
     logger.info('OPENING IMAGE {}'.format(image_names.get('image_name_orig')))
-    asyncio.get_event_loop().run_until_complete(update_image_in_redis(task_id, 'IN PROCESS', ''))
+    update_image_in_redis(task_id, 'SUCCESS', '')
     image = Image.open(image_path)
     logger.info('RESIZING IMAGE task_id:{}, image_name: {}'.format(task_id, image_names.get('image_name_orig')))
     image = image.resize((height, width))
     image.save(OUT_IMG_FOLDER.joinpath(image_names.get('new_image_name')), optimize=True)
     out_path = str(OUT_IMG_FOLDER.joinpath(image_names.get('new_image_name')))
-    asyncio.get_event_loop().run_until_complete(
-        update_image_in_redis(task_id, 'SUCCESS', out_path)
-    )
+    update_image_in_redis(task_id, 'SUCCESS', out_path)
     logger.info('RESIZING COMPLETED task_id:{}, image_name: {}'.format(task_id, image_names.get('image_name_orig')))
     asyncio.get_event_loop().run_until_complete(save_to_db(task_id, out_path))
     logger.info('IMAGE SAVED to {}'.format(out_path))
@@ -44,8 +45,9 @@ def image_name_format(image_path: str) -> dict:
     return {'new_image_name': new_image_name, 'image_name_orig': image_name_orig}
 
 
-async def update_image_in_redis(task_id: str, task_status: str, image_path='') -> None:
-    await redis.hmset_dict(task_id, {'task_status': task_status, 'image_path': image_path})
+def update_image_in_redis(task_id: str, task_status: str, image_path: str = '') -> None:
+    redis = Redis(host=settings.redis_host, port=settings.redis_port, db=settings.redis_database)
+    redis.hmset(task_id, {'task_status': task_status, 'image_path': image_path})
 
 
 async def save_to_db(image_task_id: str, image_path: str) -> None:

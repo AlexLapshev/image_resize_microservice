@@ -20,11 +20,6 @@ SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
---
--- Name: images; Type: TABLE; Schema: public; Owner: db_user
---
---CREATE ROLE db_user WITH LOGIN ENCRYPTED PASSWORD '123456';
-
 
 CREATE TABLE public.images (
     image_id integer NOT NULL,
@@ -35,9 +30,6 @@ CREATE TABLE public.images (
 
 ALTER TABLE public.images OWNER TO db_user;
 
---
--- Name: images_image_id_seq; Type: SEQUENCE; Schema: public; Owner: db_user
---
 
 CREATE SEQUENCE public.images_image_id_seq
     AS integer
@@ -50,29 +42,17 @@ CREATE SEQUENCE public.images_image_id_seq
 
 ALTER TABLE public.images_image_id_seq OWNER TO db_user;
 
---
--- Name: images_image_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: db_user
---
 
 ALTER SEQUENCE public.images_image_id_seq OWNED BY public.images.image_id;
 
 
---
--- Name: images image_id; Type: DEFAULT; Schema: public; Owner: db_user
---
-
 ALTER TABLE ONLY public.images ALTER COLUMN image_id SET DEFAULT nextval('public.images_image_id_seq'::regclass);
 
-
---
--- Name: images images_pkey; Type: CONSTRAINT; Schema: public; Owner: db_user
---
 
 ALTER TABLE ONLY public.images
     ADD CONSTRAINT images_pkey PRIMARY KEY (image_id);
 
+INSERT INTO public.images (image_id, image_task_id, image_path)
+VALUES (1, 'af90a559-14c2-4fd2-ad10-d1573b5195e0', '/app/src/tests/data_test/test.jpg');
 
---
--- PostgreSQL database dump complete
---
 

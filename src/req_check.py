@@ -1,3 +1,4 @@
+from aiohttp import web
 from aiohttp.web_request import Request, FileField
 from pydantic import ValidationError
 from pathlib import Path
@@ -5,7 +6,6 @@ from pathlib import Path
 from src.logging_file import logger
 from src.errors_status import GetError
 from src.check_req_pydantic import ImageUploadCheck
-from src.database.database import redis
 
 
 IN_IMG_FOLDER = Path(__file__).parents[0].joinpath('imgs', 'original')
@@ -35,13 +35,13 @@ async def save_original_image(image: FileField) -> str:
     return str(full_path)
 
 
-async def check_id_field(request: Request):
+async def check_id_field(request: Request) -> web.json_response or dict:
     if image_id := request.rel_url.query.get('id'):
         logger.info('CHECKING ID: {}'.format(image_id))
+        redis = request.app['redis']
         image = await redis.hmget(image_id, 'task_status', encoding='utf-8')
         if image[0]:
             logger.info('IMAGE FOUND: {}'.format(image_id))
-            print(image[0])
             return {
                 'image_id': image_id,
                 'transaction_status': image[0]

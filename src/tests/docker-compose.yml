@@ -1,42 +1,40 @@
 version: "3.3"
 services:
-  app_prod:
-    build: .
-    volumes:
-      - ./imgs_vol:/app/src/imgs
+  app_test:
+    build:
+      context: ../../
+      dockerfile: src/tests/Dockerfile
     ports:
       - "8080:8080"
-    command: bash -c "python -m src.main"
+    command: bash -c "export PYTHONPATH=. && pytest src/tests/"
     depends_on:
-      - redis_prod
-      - db_prod
-  db_prod:
+      - celery_test
+      - redis_test
+      - db_test
+  db_test:
     image: "postgres:latest"
     environment:
-      - POSTGRES_DB=image_microservice_prod
+      - POSTGRES_DB=image_microservice_test
       - POSTGRES_USER=db_user
       - POSTGRES_PASSWORD=123456
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
       - ./dump.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
-  redis_prod:
+  redis_test:
     image: "redis:alpine"
     command: redis-server
     ports:
       - "6379:6379"
-  celery_prod:
-    build: .
+  celery_test:
+    build:
+      context: ../../
+      dockerfile: src/tests/Dockerfile
     command: celery -A src.tasks worker --loglevel=info
-    volumes:
-      - .:/code
-      - ./imgs_vol:/app/src/imgs
+
     depends_on:
-      - db_prod
-      - redis_prod
-volumes:
-  pgdata:
-  imgs_vol:
+      - db_test
+      - redis_test
+
 
 
