@@ -27,7 +27,7 @@ def app(loop, aiohttp_client) -> TestClient:
                                               ({'incorrect_field_name': 2}, 400),
                                               ({}, 400)
                                               ])
-async def test_get_transaction_status(app: TestClient, image_id: dict, status: int):
+async def test_get_transaction_status(app: TestClient, image_id: dict, status: int) -> None:
     resp = await app.get('/api/v1/get_transaction_status', params=image_id)
     assert resp.status == status
 
