@@ -1,4 +1,4 @@
-#**Simple image resize app**
+# Simple image resize app
 
 ## Installation
 
