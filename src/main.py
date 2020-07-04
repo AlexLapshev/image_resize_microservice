@@ -1,8 +1,8 @@
 from aiohttp import web
 from src.routing import routes
 from src.database.database import connect_to_redis, disconnect_from_redis, connect_to_db, disconnect_from_db
-# from src.settings import redis_url
 from src.settings import settings
+
 
 def create_app() -> web.Application:
     app = web.Application(client_max_size=10 ** 8)

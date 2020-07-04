@@ -1,10 +1,11 @@
-FROM python:3.8.3-slim
+FROM postgres:latest
 
 RUN apt-get update
 
-COPY . /app
-WORKDIR /app
+ENV POSTGRES_DB image_microservice_test
+ENV POSTGRES_USER db_user
+ENV POSTGRES_PASSWORD 123456
 
-RUN pip install -r requirements.txt
+COPY dump.sql /docker-entrypoint-initdb.d/init.sql
 
-EXPOSE 8080
+EXPOSE 5432

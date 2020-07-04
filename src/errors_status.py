@@ -24,4 +24,3 @@ class GetError(BaseError):
     def create_response_error(self) -> json_response():
         return json_response({"error_msg": self.error_msg, "error_image_id": self.error_image_id},
                              status=self.status)
-

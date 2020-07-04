@@ -11,14 +11,9 @@ services:
       - redis_prod
       - db_prod
   db_prod:
-    image: "postgres:latest"
-    environment:
-      - POSTGRES_DB=image_microservice_prod
-      - POSTGRES_USER=db_user
-      - POSTGRES_PASSWORD=123456
+    image: "alexlapshev/image_microservice_prod"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
-      - ./dump.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
   redis_prod:
